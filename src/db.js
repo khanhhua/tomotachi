@@ -1,13 +1,20 @@
 import debug from 'debug';
 
-const { Client } = require('pg');
+import fs from 'fs';
+import path from 'path';
+import { Client } from 'pg';
 const client = new Client({ connectionString: process.env.DATABASE_URL });
 
 const dbg = debug('tomotachi:db');
 
 export async function initDb() {
-  dbg(`Inialializing database for the given URL ${process.env.DATABASE_URL}`);
+  dbg(`Inialializing database for the given URL ${process.env.DATABASE_URL}...`);
   await client.connect();
+
+  dbg('Executing query scripts...');
+  const query = fs.readFileSync(path.resolve(path.join(__dirname, 'dbscripts', 'init.sql')), 'utf-8');
+  await client.query(query);
+  dbg('Done');
 }
 
 export async function connectFriends(friends) {
