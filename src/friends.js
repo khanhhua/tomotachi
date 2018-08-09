@@ -12,7 +12,7 @@ export default function(app, baseUrl) {
 
   router.post('/connect', jsonRpc(connect, 'friends.0', 'friends.1'));
   router.post('/getFriendList', jsonRpc(getFriendList, 'email'));
-  router.post('/getCommonFriendList', jsonRpc(getCommonFriendList));
+  router.post('/getCommonFriendList', jsonRpc(getCommonFriendList, 'friends.0', 'friends.1'));
 
   dbg('Mounting friends module...');
   app.use(router.routes());
@@ -70,13 +70,29 @@ async function getFriendList(email) {
 }
 
 async function getCommonFriendList(friendA, friendB) {
-  dbg(`Getting the common friends of ${friendA} and ${friendB}`);
-  return Promise.resolve({
-    success: true,
-    friends :
-      [
-        'common@example.com'
-      ],
-    count : 1
+  dbg(`Checking if friends actually exists`);
+  const exists = await Promise.all([
+    await db.userExistsByEmail(friendA),
+    await db.userExistsByEmail(friendB),
+  ]).then(([...exists]) => {
+    return exists.every(Boolean);
   });
+
+  if (!exists) {
+    dbg('One of requestor email does not exist');
+
+    const e = new Error('Bad request');
+    e.status = 400;
+
+    throw e;
+  }
+
+  dbg(`Getting the common friends of ${friendA} and ${friendB}`);
+  const friends = await db.findCommonFriends([friendA, friendB]);
+
+  return {
+    success: true,
+    friends,
+    count: friends.length
+  };
 }
