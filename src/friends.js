@@ -1,6 +1,7 @@
 import Router from 'koa-router';
 import debug from 'debug';
 import _get from 'lodash.get';
+import * as db from './db';
 
 const dbg = debug('tomotachi:friends');
 
@@ -48,6 +49,9 @@ function jsonRpc(fn, ...params) {
 
 async function connect(friendA, friendB) {
   dbg(`Connecting friends ${friendA} and ${friendB}`);
+
+  await db.connectFriends([friendA, friendB]);
+
   return Promise.resolve({
     success: true
   });

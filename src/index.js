@@ -4,6 +4,7 @@ import morgan from 'koa-morgan';
 import * as swagger from 'swagger2';
 import { ui } from 'swagger2-koa';
 import makeApp from './app';
+import { initDb } from './db';
 
 const PORT = process.env.PORT || '8080';
 
@@ -17,8 +18,7 @@ const dbg = debug('tomotachi');
 Object.entries(process.env).forEach(([k, v]) => k.toUpperCase()===k && dbg(`${k}=${v}`));
 
 Promise.all([
-  // initDb().then(() => { dbg('Database configuration done'); }),
-  Promise.resolve(true)
+  initDb().then(() => { dbg('Database configuration done'); })
 ]).then(() => {
   dbg('Initialization completed');
 

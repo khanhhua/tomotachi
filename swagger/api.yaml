@@ -32,10 +32,9 @@ paths:
             **Sample value**
             ```
             {
-              friends:
-              [
-                'andy@example.com',
-                'john@example.com'
+              "friends": [
+                "andy@example.com",
+                "john@example.com"
               ]
             }
             ```

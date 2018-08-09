@@ -3,7 +3,6 @@ import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 chai.use(spies);
 
-import * as friends from '../src/friends';
 import { __RewireAPI__ as rewireApi } from '../src/friends';
 import makeApp from '../src/app';
 
