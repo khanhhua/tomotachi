@@ -19,28 +19,71 @@ export async function initDb() {
 }
 
 export async function connectFriends(friends) {
-  const selectQuery = 'SELECT email, friends FROM friends WHERE email = $1 LIMIT 1';
+  if (friends.length !== 2) {
+    throw new Error('Invalid argument. Only 2 friends for this demo');
+  }
+
+  const selectQuery = 'SELECT email, friends, blockers FROM friends WHERE email = $1 LIMIT 1;';
   const queryInsert = 'INSERT INTO friends(email, friends) VALUES ($1, $2) RETURNING *;';
   const queryUpdate = 'UPDATE friends SET friends=$2 WHERE email=$1 RETURNING *;';
 
   try {
-    for (let i=0, len=friends.length; i<len; i++) {
-      const email = friends[i];
-      dbg('Checking from email exists...')
-      const row = await client.query(selectQuery, [email]).then(res => res.rows[0]);
+    let updated = await new Promise((resolve, reject) => {
+      let updated = 0;
+      client.query('BEGIN', async () => {
+        for (let i=0, len=friends.length; i<len; i++) {
+          const email = friends[i];
+          const friendB = friends.filter((_item, index) => index !== i).map(item => item)[0]; // clone
+          dbg(`Checking email ${email} exists...`);
 
-      if (row) {
-        const connectedFriends = [].concat(row.friends, friends.filter((_item, index) => index !== i).map(item => item)); // clone
+          const row = await client.query(selectQuery, [ email ]).then(res => res.rows[ 0 ]);
+          // row.blockers is a list of friends that has blocked friendA, thus won't receive updates from A
+          // also if A has not added B but B is already in A.blockers, then so sad for A - B won't join A.friends list
+          if (row) {
+            if (row.blockers && row.blockers.includes(friendB)) {
+              dbg('Friend B has blocked friend A. A cannot add B to his friend list, nor vice versa. Ignored.');
 
-        dbg('Updating email with friend list');
-        await client.query(queryUpdate, [email, connectedFriends]);
-      } else {
-        const connectedFriends = friends.filter((_item, index) => index !== i).map(item => item); // clone
+              client.query('ROLLBACK', (err) => {
+                if (err) {
+                  dbg('Error during transaction rolling back.');
+                  return reject(err);
+                }
+                const e = new Error('Blocker error');
+                e.status = 400;
+                reject(e); // To be thrown later
+              });
 
-        dbg('Inserting email with friend list', [email, connectedFriends]);
-        await client.query(queryInsert, [email, connectedFriends]);
-      }
-    }
+              break;
+            }
+
+            const connectedFriends = [].concat(row.friends, friendB); // clone
+
+            dbg('Updating email with friend list');
+            const result = await client.query(queryUpdate, [ email, connectedFriends ]);
+
+            updated += result.rowCount;
+          } else {
+            const connectedFriends = [friendB]; // clone
+
+            dbg('Inserting email with friend list', [ email, connectedFriends ]);
+            const result = await client.query(queryInsert, [ email, connectedFriends ]);
+
+            updated += result.rowCount;
+          }
+        }
+
+        client.query('COMMIT', (err) => {
+          if (err) {
+            dbg('Error during transaction commit.');
+            return reject(err);
+          }
+
+          resolve(updated);
+        });
+      });
+    });
+
+    return !!updated;
   } catch (e) {
     dbg(e.message);
 

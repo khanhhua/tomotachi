@@ -41,8 +41,21 @@ describe('As a user, I need an API to create a friend connection between two ema
       await supertest(app.callback())
         .post('/api/v1/connect')
         .set('Content-Type', 'application/json')
-        .send({ friends: [
-          'a@mail.com']
+        .send({
+          friends: [
+            'a@mail.com'
+          ]
+        })
+        .expect(400);
+
+      await supertest(app.callback())
+        .post('/api/v1/connect')
+        .set('Content-Type', 'application/json')
+        .send({
+          friends: [
+            'a@mail.com',
+            'a@mail.com'
+          ]
         })
         .expect(400);
 
@@ -67,7 +80,6 @@ describe('As a user, I need an API to create a friend connection between two ema
 
     beforeEach(() => {
       connect = chai.spy(() => {
-        debugger
         return Promise.resolve({ success: true })
       });
       rewireApi.__Rewire__('connect', connect);
