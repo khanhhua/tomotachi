@@ -1,0 +1,53 @@
+{
+  "name": "tomotachi",
+  "version": "1.0.0",
+  "description": "Simple friend network management",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "BABEL_DISABLE_CACHE=1 DEBUG=tomotachi* babel-node src/index.js",
+    "debug": "BABEL_DISABLE_CACHE=1 DEBUG=tomotachi* babel-node --inspect=9229 src/index.js",
+    "test": "npm run test:swagger",
+    "test:swagger": "BABEL_DISABLE_CACHE=1 mocha --require babel-core/register './test/{,!(node_modules)/**/}*.test.js'",
+    "test:unit": "BABEL_DISABLE_CACHE=1 mocha --require babel-core/register './src/{,!(node_modules)/**/}*.spec.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khanhhua/tomotachi.git"
+  },
+  "keywords": [
+    "friends"
+  ],
+  "author": "Khanh Hua",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/khanhhua/tomotachi/issues"
+  },
+  "homepage": "https://github.com/khanhhua/tomotachi#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-inline-dotenv": "^1.1.2",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-plugin-rewire": "^1.1.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "supertest": "^3.1.0",
+    "chai": "^4.1.2",
+    "chai-spies": "^1.0.0",
+    "mocha": "^5.2.0",
+    "nyc": "^12.0.2"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "koa": "^2.5.2",
+    "koa-body": "^4.0.4",
+    "koa-convert": "^1.2.0",
+    "koa-cors": "0.0.16",
+    "koa-morgan": "^1.0.1",
+    "koa-router": "^7.4.0",
+    "lodash.get": "^4.4.2",
+    "pg": "^7.4.3",
+    "swagger2": "^1.0.1",
+    "swagger2-koa": "^1.0.1"
+  }
+}
