@@ -102,6 +102,102 @@ describe('As a user, I need an API to subscribe to updates from an email address
   });
 });
 
+describe('As a user, I need an API to block updates from an email address.', () => {
+  let app;
+
+  describe('Bad Method Calls', () => {
+    let block;
+
+    beforeEach(() => {
+      block = chai.spy(() => {
+        return Promise.resolve({ success: true });
+      });
+      rewireApi.__Rewire__('block', block);
+      app = makeApp();
+    });
+
+    afterEach(() => {
+      rewireApi.__ResetDependency__('block');
+    });
+
+    it('must reject bad method calls', async () => {
+      await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send()
+        .expect(400);
+
+      await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({ requestor: 'a' })
+        .expect(400);
+
+      await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({ target: 'b' })
+        .expect(400);
+
+      await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({ requestor: 'a', target: 'b' })
+        .expect(400);
+
+      const res =await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({ requestor: 'john@mail.com', target: 'notanemail' })
+        .expect(400);
+
+      expectApiResponse(res);
+      expect(block).to.not.have.been.called;
+    })
+  });
+
+  describe('Block updates', () => {
+    let block;
+
+    afterEach(() => {
+      rewireApi.__ResetDependency__('block');
+    });
+
+    it('cannot block to oneself', async () => {
+      app = makeApp();
+
+      const res = await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({
+          requestor: 'john@example.com',
+          target: 'john@example.com'
+        })
+        .expect(400);
+      expect(res.body.success).to.be.false;
+    });
+
+    it('must block a target friend', async () => {
+      block = chai.spy(() => {
+        return Promise.resolve({ success: true });
+      });
+      rewireApi.__Rewire__('block', block);
+      app = makeApp();
+
+      const res = await supertest(app.callback())
+        .post('/api/v1/block')
+        .set('Content-Type', 'application/json')
+        .send({
+          requestor: 'joe@mail.com',
+          target: 'jane@mail.com'
+        })
+        .expect(200);
+      expect(res.body.success).to.be.true;
+      expect(block).to.have.been.called.with.exactly('joe@mail.com', 'jane@mail.com');
+    })
+  });
+});
+
 function expectApiResponse(res) {
   expect(res.ok).to.be.false;
   expect(res.body.success).to.be.false;

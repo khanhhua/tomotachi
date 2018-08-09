@@ -81,6 +81,33 @@ async function subscribe(requestor, target) {
 }
 
 async function block(requestor, target) {
+  if (requestor === target) {
+    const e = new Error('Cannot block oneself');
+    e.status = 400;
+    throw e;
+  }
+
+  dbg(`Checking if friends actually exists`);
+  const exists = await Promise.all([
+    await db.userExistsByEmail(requestor),
+    await db.userExistsByEmail(target),
+  ]).then(([...exists]) => {
+    return exists.every(Boolean);
+  });
+
+  if (!exists) {
+    dbg('One of requestor/target email does not exist');
+
+    const e = new Error('Bad request');
+    e.status = 400;
+
+    throw e;
+  }
+
+  dbg(`Blocking friend ${target} from ${requestor}`);
+
+  await db.makeBlock(requestor, target);
+
   return {
     success: true
   };

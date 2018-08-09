@@ -142,7 +142,7 @@ paths:
   '/subscribe':
     post:
       tags:
-        - friends
+        - subscriptions
       summary: API to subscribe to updates from an email address..
       description: Note that "subscribing to updates" is NOT equivalent to "adding a friend connection".
       parameters:
@@ -181,7 +181,7 @@ paths:
   '/block':
     post:
       tags:
-        - friends
+        - subscriptions
       summary: API to block updates from an email address..
       description: |
         Suppose "andy@example.com" blocks "john@example.com":
@@ -202,6 +202,9 @@ paths:
           ```
         schema:
           type: object
+          required:
+            - requestor
+            - target
           properties:
             requestor:
               type: string
