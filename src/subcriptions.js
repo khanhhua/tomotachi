@@ -3,7 +3,7 @@ import debug from 'debug';
 import _get from 'lodash.get';
 import * as db from './db';
 
-const dbg = debug('tomotachi:friends');
+const dbg = debug('tomotachi:subscription');
 
 export default function(app, baseUrl) {
   const router = new Router({
@@ -48,6 +48,7 @@ function jsonRpc(fn, ...params) {
 }
 
 async function subscribe(requestor, target) {
+  dbg(`Subscribing ${requestor} to target ${target}`);
   if (requestor === target) {
     const e = new Error('Cannot subscribe to oneself');
     e.status = 400;
@@ -81,6 +82,7 @@ async function subscribe(requestor, target) {
 }
 
 async function block(requestor, target) {
+  dbg(`Blocking ${requestor} from target ${target}`);
   if (requestor === target) {
     const e = new Error('Cannot block oneself');
     e.status = 400;
@@ -114,11 +116,15 @@ async function block(requestor, target) {
 }
 
 async function getUpdateRecipients(sender, text) {
+  dbg(`Retrieving the effective list of update recipients for sender ${sender}`);
+
+  const mentionees = text.match(/(?:\b(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3})\b)/g) || [];
+  dbg(`Text contains ${mentionees.length} mentionees`);
+
+  const recipients = await db.getCombinedRecipientsList(sender, mentionees);
+
   return {
     success: true,
-    recipients: [
-      'lisa@example.com',
-      'kate@example.com'
-    ]
+    recipients
   };
 }

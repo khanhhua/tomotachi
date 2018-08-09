@@ -164,3 +164,61 @@ export async function makeBlock(requestor, target) {
     throw e;
   }
 }
+
+export async function getCombinedRecipientsList(sender, mentionees=[]) {
+  // $1: mentionees
+  const mentioneesQuery = `
+    SELECT email FROM friends WHERE email = ANY($1)`;
+
+  // $1: sender
+  // $2: mentionees
+  const selectQuery = 'SELECT EXISTS (SELECT email FROM friends WHERE email = $1) as result';
+  const recipientsQuery =`
+    SELECT unnest(subscribers) as email
+      FROM "friends"
+      WHERE email = $1
+    UNION
+    SELECT unnest(array_cat(friends, $2)) as email
+      FROM "friends"
+      WHERE email = $1
+    EXCEPT
+    SELECT unnest(blockers) AS email
+      FROM "friends"
+      WHERE email = $1`;
+
+  try {
+    dbg(`Checking if ${sender} exists...`);
+    const row = await client.query(selectQuery, [sender]).then(res => res.rows[0]);
+    dbg(`${sender} exists = ${row.result}`);
+    if (!row.result) {
+      dbg('Sender does not exists');
+      const e = new Error('Sender not found');
+      e.status = 400;
+      throw e;
+    }
+
+    // Don't mention the sender himself!!!!
+    mentionees = mentionees.filter(item => item !== sender);
+    if (mentionees.length) {
+      dbg('Obtaining valid mentionees...');
+      const validMentioneeRows = await client.query(mentioneesQuery, [mentionees]).then(res => res.rows);
+      mentionees = validMentioneeRows.map(({email}) => email);
+      dbg('Valid mentionees are:', mentionees);
+    }
+
+    const rows = await client.query(recipientsQuery, [sender, mentionees]).then(res => res.rows);
+    dbg(rows);
+
+    return rows.map(({email}) => email);
+  } catch (e) {
+    dbg(e.message);
+
+    e.status = e.status || 500;
+    throw e;
+  }
+
+  return {
+    blockers: [],
+    subscribers: []
+  };
+}
