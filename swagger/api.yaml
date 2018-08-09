@@ -41,9 +41,13 @@ paths:
             ```
           schema:
             type: object
+            required:
+              - friends
             properties:
               friends:
                 type: array
+                minItems: 2
+                maxItems: 2
                 items:
                   type: string
                   format: email

@@ -5,6 +5,8 @@ import bodyParser from 'koa-bodyparser';
 import * as swagger from 'swagger2';
 import { validate } from 'swagger2-koa';
 
+import friends from './friends';
+
 export default function makeApp() {
   const dbg = debug('tomotachi:app');
 
@@ -21,6 +23,7 @@ export default function makeApp() {
         dbg(devError);
 
         ctx.body = {
+          success: false,
           code: 400,
           type: 'error',
           message: 'Bad Request',
@@ -41,6 +44,7 @@ export default function makeApp() {
 
   app.use(validate(document));
   // Mounting modules as we go
+  friends(app, '/api/v1');
 
   return app;
 }
