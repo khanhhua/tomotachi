@@ -11,7 +11,7 @@ export default function(app, baseUrl) {
   });
 
   router.post('/connect', jsonRpc(connect, 'friends.0', 'friends.1'));
-  router.post('/getFriendList', jsonRpc(getFriendList));
+  router.post('/getFriendList', jsonRpc(getFriendList, 'email'));
   router.post('/getCommonFriendList', jsonRpc(getCommonFriendList));
 
   dbg('Mounting friends module...');
@@ -59,13 +59,13 @@ async function connect(friendA, friendB) {
 
 async function getFriendList(email) {
   dbg(`Getting friends for email=${email}`);
+
+  const friends = await db.findFriendsByEmail(email);
+
   return Promise.resolve({
     success: true,
-    friends:
-      [
-        'john@example.com'
-      ],
-    count: 1
+    friends,
+    count: friends.length
   });
 }
 

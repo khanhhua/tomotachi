@@ -33,6 +33,7 @@ export default function makeApp() {
     } catch (err) {
       ctx.status = err.status || 500;
       ctx.body = {
+        success: false,
         code: err.status || 500,
         type: 'error',
         message: err.message || 'Bad Request'

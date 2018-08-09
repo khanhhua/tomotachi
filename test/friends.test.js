@@ -91,6 +91,90 @@ describe('As a user, I need an API to create a friend connection between two ema
   });
 });
 
+describe('As a user, I need an API to retrieve the friends list for an email address.', () => {
+  let app;
+
+  describe('Bad Method Calls', () => {
+    let getFriendList;
+
+    beforeEach(() => {
+      getFriendList = chai.spy(() => {
+        return Promise.resolve({ success: true })
+      });
+      rewireApi.__Rewire__('getFriendList', getFriendList);
+      app = makeApp();
+    });
+
+    it('must reject bad method calls', async () => {
+      await supertest(app.callback())
+        .post('/api/v1/getFriendList')
+        .set('Content-Type', 'application/json')
+        .send()
+        .expect(400);
+
+      const res = await supertest(app.callback())
+        .post('/api/v1/getFriendList')
+        .set('Content-Type', 'application/json')
+        .send({ email: 'something' })
+        .expect(400);
+
+      expectApiResponse(res);
+      expect(getFriendList).to.not.have.been.called;
+    })
+  });
+
+  describe('Get Friend List', () => {
+    let getFriendList;
+
+    beforeEach(() => {
+
+    });
+
+    it('must get a list of friends', async () => {
+      getFriendList = chai.spy(() => {
+        return Promise.resolve({
+          success: true,
+          friends: [ 'john@mail.com' ],
+          count: 1
+        })
+      });
+      rewireApi.__Rewire__('getFriendList', getFriendList);
+      app = makeApp();
+
+      const res = await supertest(app.callback())
+        .post('/api/v1/getFriendList')
+        .set('Content-Type', 'application/json')
+        .send({ email: 'andy@example.com' })
+        .expect(200);
+      expect(res.body.success).to.be.true;
+      expect(res.body.friends).to.exist;
+      expect(res.body.count).to.exist;
+
+      expect(getFriendList).to.have.been.called.with.exactly('andy@example.com');
+    });
+
+    it('must return error response if such email does not exist', async () => {
+      getFriendList = chai.spy(() => {
+        const e = new Error('Not found');
+        e.status = 404;
+        return Promise.reject(e);
+      });
+      rewireApi.__Rewire__('getFriendList', getFriendList);
+      app = makeApp();
+
+      const res = await supertest(app.callback())
+        .post('/api/v1/getFriendList')
+        .set('Content-Type', 'application/json')
+        .send({ email: 'andy@example.com' })
+        .expect(404);
+
+      expectApiResponse(res);
+      expect(getFriendList).to.have.been.called.with.exactly('andy@example.com');
+    });
+  });
+});
+
+
 function expectApiResponse(res) {
   expect(res.ok).to.be.false;
   expect(res.body.success).to.be.false;

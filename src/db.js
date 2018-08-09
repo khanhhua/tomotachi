@@ -43,7 +43,28 @@ export async function connectFriends(friends) {
   } catch (e) {
     dbg(e.message);
 
-    e.status = 500;
+    e.status = e.status || 500;
+    throw e;
+  }
+}
+
+export async function findFriendsByEmail(email) {
+  const selectQuery = 'SELECT email, friends FROM friends WHERE email = $1 LIMIT 1';
+
+  try {
+    const row = await client.query(selectQuery, [email]).then(res => res.rows[0]);
+    if (!row) {
+      const e = new Error('Not found');
+      e.status = 404;
+
+      throw e;
+    }
+
+    return row.friends;
+  } catch (e) {
+    dbg(e.message);
+
+    e.status = e.status || 500;
     throw e;
   }
 }
