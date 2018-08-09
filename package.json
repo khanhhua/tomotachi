@@ -6,7 +6,9 @@
   "scripts": {
     "start": "BABEL_DISABLE_CACHE=1 DEBUG=tomotachi* babel-node src/index.js",
     "debug": "BABEL_DISABLE_CACHE=1 DEBUG=tomotachi* babel-node --inspect=9229 src/index.js",
-    "test": "npm run test:unit"
+    "test": "npm run test:swagger",
+    "test:swagger": "BABEL_DISABLE_CACHE=1 mocha --require babel-core/register './test/{,!(node_modules)/**/}*.test.js'",
+    "test:unit": "BABEL_DISABLE_CACHE=1 mocha --require babel-core/register './src/{,!(node_modules)/**/}*.spec.js'"
   },
   "repository": {
     "type": "git",
