@@ -225,7 +225,7 @@ paths:
   '/getUpdateRecipients':
     post:
       tags:
-        - friends
+        - subscriptions
       summary: API to retrieve all email addresses that can receive updates from an email address
       description: |
         Eligibility for receiving updates from i.e. "john@example.com":
@@ -250,12 +250,17 @@ paths:
           ```
         schema:
           type: object
+          required:
+            - sender
+            - text
           properties:
             sender:
               type: string
               format: email
             text:
               type: string
+              pattern: '^[\w\s@.,?!:]+$'
+              description: 'Free text but only alpha numeric characters and "@", ".", ",", "!", ":" are allowed.'
       responses:
         '200':
           description: successful operation
