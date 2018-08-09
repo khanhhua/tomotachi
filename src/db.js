@@ -110,3 +110,30 @@ export async function findCommonFriends(friends) {
     throw e;
   }
 }
+
+export async function makeSubscription(requestor, target) {
+  // $1: requestor - add this to list of subscribers
+  // $2: target - add the requestor to this subscribers list
+  const selectQuery = 'SELECT EXISTS (SELECT subscribers FROM friends WHERE email = $2 AND $1 = ANY(subscribers)) as result';
+  const updateQuery = 'UPDATE friends SET subscribers = array_append(subscribers, $1) WHERE email=$2';
+
+  try {
+    dbg(`Checking if ${requestor} exists...`);
+    const row = await client.query(selectQuery, [requestor,target]).then(res => res.rows[0]);
+    dbg(`${requestor} exists = ${row.result}`);
+    if (row.result) {
+      dbg('Requestor is already in the target list of subscriber. Ignored.');
+      return true;
+    }
+
+    dbg('Adding requestor email into the list of target` subscribers');
+    const result = await client.query(updateQuery, [requestor, target]);
+
+    return result.rowCount === 1;
+  } catch (e) {
+    dbg(e.message);
+
+    e.status = e.status || 500;
+    throw e;
+  }
+}
