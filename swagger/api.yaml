@@ -111,21 +111,24 @@ paths:
           **Sample value**
           ```
           {
-            friends:
-            [
-              'andy@example.com',
-              'john@example.com'
+            "friends": [
+              "andy@example.com",
+              "john@example.com"
             ]
           }
           ```
         schema:
           type: object
+          required:
+            - friends
           properties:
             friends:
               type: array
               items:
                 type: string
                 format: email
+              minItems: 2
+              maxItems: 2
       responses:
         '200':
           description: successful operation

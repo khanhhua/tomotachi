@@ -3,6 +3,7 @@ import debug from 'debug';
 import fs from 'fs';
 import path from 'path';
 import { Client } from 'pg';
+
 const client = new Client({ connectionString: process.env.DATABASE_URL });
 
 const dbg = debug('tomotachi:db');
@@ -61,6 +62,47 @@ export async function findFriendsByEmail(email) {
     }
 
     return row.friends;
+  } catch (e) {
+    dbg(e.message);
+
+    e.status = e.status || 500;
+    throw e;
+  }
+}
+
+export async function userExistsByEmail(email) {
+  dbg(`Checking if ${email} exists...`);
+
+  const selectQuery = 'SELECT EXISTS (SELECT email FROM friends WHERE email = $1) as result';
+  try {
+    const row = await client.query(selectQuery, [email]).then(res => res.rows[0]);
+    dbg(`${email} exists = ${row.result}`);
+
+    return row.result;
+  } catch (e) {
+    dbg(e.message);
+
+    e.status = e.status || 500;
+    throw e;
+  }
+}
+
+export async function findCommonFriends(friends) {
+  if (friends.length !== 2) {
+    throw new Error('Invalid argument. Only 2 friends for this demo');
+  }
+
+  const selectQuery =
+    `SELECT (
+      (SELECT unnest(friends) FROM friends WHERE email=$1)
+      INTERSECT
+      (SELECT unnest(friends) FROM friends WHERE email=$2)
+    ) as email`;
+
+  try {
+    const rows = await client.query(selectQuery, friends).then(res => res.rows);
+
+    return rows.map(({ email }) => email);
   } catch (e) {
     dbg(e.message);
 
