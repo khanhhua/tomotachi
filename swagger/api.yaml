@@ -73,11 +73,13 @@ paths:
           **Sample value**
           ```
           {
-            email: 'andy@example.com'
+            "email": "andy@example.com"
           }
           ```
         schema:
           type: object
+          required:
+            - email
           properties:
             email:
               type: string
@@ -89,6 +91,10 @@ paths:
             $ref: '#/definitions/FriendListResponse'
         '400':
           description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '404':
+          description: Email not found
           schema:
             $ref: '#/definitions/ApiResponse'
 
