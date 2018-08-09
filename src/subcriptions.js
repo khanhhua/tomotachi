@@ -74,10 +74,10 @@ async function subscribe(requestor, target) {
 
   dbg(`Subscribing ${requestor} to friend ${target}`);
 
-  await db.makeSubscription(requestor, target);
+  const result = await db.makeSubscription(requestor, target);
 
   return {
-    success: true
+    success: result
   };
 }
 
@@ -108,10 +108,10 @@ async function block(requestor, target) {
 
   dbg(`Blocking friend ${target} from ${requestor}`);
 
-  await db.makeBlock(requestor, target);
+  const result = await db.makeBlock(requestor, target);
 
   return {
-    success: true
+    success: result
   };
 }
 

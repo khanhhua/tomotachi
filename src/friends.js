@@ -50,10 +50,10 @@ function jsonRpc(fn, ...params) {
 async function connect(friendA, friendB) {
   dbg(`Connecting friends ${friendA} and ${friendB}`);
 
-  await db.connectFriends([friendA, friendB]);
+  const result = await db.connectFriends([friendA, friendB]);
 
   return Promise.resolve({
-    success: true
+    success: result
   });
 }
 
