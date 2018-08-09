@@ -1,0 +1,300 @@
+swagger: '2.0'
+info:
+  description: Documentation for interacting with Tomotachi via JSON-Rpc/HTTP
+  version: 1.0.0
+  title: Tomotachi
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: giakhanh2487@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: 'localhost:8080'
+basePath: /api/v1
+tags:
+- name: friends
+  description: Friends and the links between them
+- name: subscriptions
+  description: Who receives what from whom
+schemes:
+- http
+paths:
+  '/connect':
+    post:
+      tags:
+        - friends
+      summary: API to create a friend connection between two email addresses
+
+      parameters:
+        - in: body
+          name: rpcParamObject
+          description: |
+            **Sample value**
+            ```
+            {
+              friends:
+              [
+                'andy@example.com',
+                'john@example.com'
+              ]
+            }
+            ```
+          schema:
+            type: object
+            properties:
+              friends:
+                type: array
+                items:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  '/getFriendList':
+    post:
+      tags:
+        - friends
+      summary: API to retrieve the friends list for an email address.
+
+      parameters:
+      - in: body
+        name: rpcParamObject
+        description: |
+          **Sample value**
+          ```
+          {
+            email: 'andy@example.com'
+          }
+          ```
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FriendListResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  '/getCommonFriendList':
+    post:
+      tags:
+        - friends
+      summary: API to retrieve the common friends list between two email addresses.
+
+      parameters:
+      - in: body
+        name: rpcParamObject
+        description: |
+          **Sample value**
+          ```
+          {
+            friends:
+            [
+              'andy@example.com',
+              'john@example.com'
+            ]
+          }
+          ```
+        schema:
+          type: object
+          properties:
+            friends:
+              type: array
+              items:
+                type: string
+                format: email
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/FriendListResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  '/subscribe':
+    post:
+      tags:
+        - friends
+      summary: API to subscribe to updates from an email address..
+      description: Note that "subscribing to updates" is NOT equivalent to "adding a friend connection".
+      parameters:
+      - in: body
+        name: rpcParamObject
+        description: |
+          **Sample value**
+          ```
+          {
+            "requestor": "lisa@example.com",
+            "target": "john@example.com"
+          }
+          ```
+        schema:
+          type: object
+          properties:
+            requestor:
+              type: string
+              format: email
+            target:
+              type: string
+              format: email
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  '/block':
+    post:
+      tags:
+        - friends
+      summary: API to block updates from an email address..
+      description: |
+        Suppose "andy@example.com" blocks "john@example.com":
+
+        if they are connected as friends, then "andy" will no longer receive notifications from "john"
+        if they are not connected as friends, then no new friends connection can be added
+
+      parameters:
+      - in: body
+        name: rpcParamObject
+        description: |
+          **Sample value**
+          ```
+          {
+            "requestor": "lisa@example.com",
+            "target": "john@example.com"
+          }
+          ```
+        schema:
+          type: object
+          properties:
+            requestor:
+              type: string
+              format: email
+            target:
+              type: string
+              format: email
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+  '/getUpdateRecipients':
+    post:
+      tags:
+        - friends
+      summary: API to retrieve all email addresses that can receive updates from an email address
+      description: |
+        Eligibility for receiving updates from i.e. "john@example.com":
+
+          - has not blocked updates from "john@example.com", and
+          - at least one of the following:
+
+            - has a friend connection with "john@example.com"
+            - has subscribed to updates from "john@example.com"
+            - has been @mentioned in the update
+
+      parameters:
+      - in: body
+        name: rpcParamObject
+        description: |
+          **Sample value**
+          ```
+          {
+            "sender":  "john@example.com",
+            "text": "Hello World! kate@example.com"
+          }
+          ```
+        schema:
+          type: object
+          properties:
+            sender:
+              type: string
+              format: email
+            text:
+              type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SubscriberListResponse'
+        '400':
+          description: bad request
+          schema:
+            $ref: '#/definitions/ApiResponse'
+
+definitions:
+  FriendListResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        enum: [true]
+      friends:
+        type: array
+        items:
+          type: string
+          format: email
+      count:
+        type: integer
+
+  SubscriberListResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        enum: [true]
+      recipients:
+        type: array
+        items:
+          type: string
+          format: email
+      count:
+        type: integer
+
+  ApiResponse:
+    type: object
+    required:
+      - success
+    properties:
+      success:
+        type: boolean
+      code:
+        type: integer
+        format: int64
+      type:
+        type: string
+      message:
+        type: string
+      errors:
+        type: array
+        items:
+          type: string
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'

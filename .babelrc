@@ -1,0 +1,26 @@
+{
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": "current"
+      }
+    }]
+  ],
+  "ignore": "node_modules/(?!(koa-bodyparser)\/).*",
+  "plugins": [
+    "rewire",
+    "transform-object-rest-spread",
+    "transform-async-to-generator",
+    "inline-dotenv"
+  ],
+  "env": {
+    "test": {
+      "plugins": [ "istanbul", {
+        "exclude": [
+          "**/*.spec.js",
+          "**/*.test.js"
+        ]
+      }]
+    }
+  }
+}
