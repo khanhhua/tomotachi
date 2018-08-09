@@ -110,3 +110,13 @@ export async function findCommonFriends(friends) {
     throw e;
   }
 }
+
+export async function makeSubscription(requestor, target) {
+  dbg('Adding requestor email into the list of target` subscribers');
+  const updateQuery = 'UPDATE friends SET subscribers = array_append(subscribers, $1) WHERE email=$2';
+
+  const result = await client.query(updateQuery, [requestor, target]);
+  dbg('Result', result);
+
+  return Promise.resolve(true);
+}

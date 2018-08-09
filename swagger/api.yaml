@@ -158,6 +158,9 @@ paths:
           ```
         schema:
           type: object
+          required:
+            - requestor
+            - target
           properties:
             requestor:
               type: string

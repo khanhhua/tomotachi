@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.friends
 (
     email character varying(255) COLLATE pg_catalog."en_US.utf8" NOT NULL,
     friends character varying(255)[] COLLATE pg_catalog."en_US.utf8",
+    subcribers character varying(255)[] COLLATE pg_catalog."en_US.utf8",
     CONSTRAINT "PK_key" PRIMARY KEY (email)
 )
 WITH (

@@ -6,6 +6,7 @@ import * as swagger from 'swagger2';
 import { validate } from 'swagger2-koa';
 
 import friends from './friends';
+import subcriptions from './subcriptions';
 
 export default function makeApp() {
   const dbg = debug('tomotachi:app');
@@ -46,6 +47,7 @@ export default function makeApp() {
   app.use(validate(document));
   // Mounting modules as we go
   friends(app, '/api/v1');
+  subcriptions(app, '/api/v1');
 
   return app;
 }
