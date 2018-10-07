@@ -50,6 +50,7 @@
     "lodash.get": "^4.4.2",
     "mongoose": "^5.3.1",
     "swagger2": "^1.0.1",
-    "swagger2-koa": "^1.0.1"
+    "swagger2-koa": "^1.0.1",
+    "uuid": "^3.3.2"
   }
 }

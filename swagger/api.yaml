@@ -74,7 +74,7 @@ paths:
           description: bad request
           schema:
             $ref: '#/definitions/ApiResponse'
-  '/channels/:channelId':
+  '/channels/{channelId}':
     get:
       tags:
         - channel
@@ -96,10 +96,10 @@ paths:
           schema:
             $ref: '#/definitions/ApiResponse'
 
-  '/channels/:channelId/messages':
+  '/channels/{channelId}/messages':
     post:
       tags:
-        - channel
+        - message
       summary: Post new message to the channel
       parameters:
         - in: path
@@ -110,7 +110,10 @@ paths:
         - in: body
           name: message
           schema:
-            type: string
+            type: object
+            properties:
+              text:
+                type: string
           description: The message to send
 
       responses:
@@ -123,7 +126,7 @@ paths:
           schema:
             $ref: '#/definitions/ApiResponse'
 
-  '/messages/:messageId':
+  '/messages/{channelId}/{messageId}':
     put:
       tags:
         - message
@@ -133,7 +136,13 @@ paths:
           name: channelId
           schema:
             type: string
-          description: Channel ID
+          description: Channel ID which owns the message
+          required: true
+        - in: path
+          name: messageId
+          schema:
+            type: string
+          description: Message ID
           required: true
         - in: body
           name: message
@@ -171,6 +180,9 @@ definitions:
 
   Channel:
     type: object
+    required:
+      - id
+      - name
     properties:
       id:
         type: string

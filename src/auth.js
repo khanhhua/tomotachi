@@ -5,7 +5,7 @@ import debug from 'debug';
 import * as db from './db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 's@cret';
-const dbg = debug('web-api:friends');
+const dbg = debug('web-api:auth');
 
 async function authenticate(ctx) {
   const { body: payload } = ctx.request;

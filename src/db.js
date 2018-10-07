@@ -30,6 +30,8 @@ const ChannelSchema = new Schema(
     name: String,
     chatters: [Schema.Types.ObjectId],
     activeChunk: Schema.Types.ObjectId, // Pointer to the ChannelChunkSchema chunk
+    createdAt: Date,
+    lastMsgAt: Date,
   }, schemaOptions);
 ChannelSchema.virtual('id').get(function () {
   return this._id.toHexString(); // eslint-disable-line
@@ -37,13 +39,19 @@ ChannelSchema.virtual('id').get(function () {
 
 const ChannelChunkSchema = new Schema({
   channelId: Schema.Types.ObjectId,
-  chatters: [Schema.Types.ObjectId],
   lastMsgAt: Date,
+  messages: [
+    {
+      id: String,
+      sender: Schema.Types.ObjectId,
+      body: String,
+      createdAt: Date,
+    }],
 });
 
 export const User = mongoose.model('User', UserSchema);
 export const Channel = mongoose.model('Channel', ChannelSchema);
-export const ChannelMessages = mongoose.model('ChannelChunk', ChannelChunkSchema);
+export const ChannelChunk = mongoose.model('ChannelChunk', ChannelChunkSchema);
 
 export async function initDb() {
   dbg(`Initializing database for the given URL ${DATABASE_URL}...`);
@@ -63,10 +71,15 @@ export async function initDb() {
 
   dbg('Executing query scripts...');
   // try {
-  //   await User.create({ email: 'user1@mailinator.com', username: 'user1', channels: [] });
+  //   await Channel.create({ name: 'general' });
+  //   await Channel.create({ name: 'chatbot' });
   // } catch (e) {
   //   console.log(e.stackTrace);
   // }
 
   dbg('Done');
+}
+
+export function objectId() {
+  return mongoose.Types.ObjectId();
 }
