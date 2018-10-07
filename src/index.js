@@ -11,14 +11,14 @@ const PORT = process.env.PORT || '8080';
 const document = swagger.loadDocumentSync('./swagger/api.yaml');
 
 const app = makeApp();
-app.use(ui(document, "/swagger"));
+app.use(ui(document, '/swagger'));
 app.use(morgan('combined'));
 
-const dbg = debug('tomotachi');
-Object.entries(process.env).forEach(([k, v]) => k.toUpperCase()===k && dbg(`${k}=${v}`));
+const dbg = debug('web-api');
+Object.entries(process.env).forEach(([k, v]) => k.toUpperCase() === k && dbg(`${k}=${v}`));
 
 Promise.all([
-  initDb().then(() => { dbg('Database configuration done'); })
+  initDb().then(() => { dbg('Database configuration done'); }),
 ]).then(() => {
   dbg('Initialization completed');
 

@@ -5,11 +5,10 @@ import bodyParser from 'koa-bodyparser';
 import * as swagger from 'swagger2';
 import { validate } from 'swagger2-koa';
 
-import friends from './friends';
-import subcriptions from './subcriptions';
+import auth from './auth';
 
 export default function makeApp() {
-  const dbg = debug('tomotachi:app');
+  const dbg = debug('web-api:app');
 
   const app = new Koa();
   const document = swagger.loadDocumentSync('./swagger/api.yaml');
@@ -28,7 +27,7 @@ export default function makeApp() {
           code: 400,
           type: 'error',
           message: 'Bad Request',
-          errors: ctx.body.errors.map(({error}) => error)
+          errors: ctx.body.errors.map(({ error }) => error),
         };
       }
     } catch (err) {
@@ -37,7 +36,7 @@ export default function makeApp() {
         success: false,
         code: err.status || 500,
         type: 'error',
-        message: err.message || 'Bad Request'
+        message: err.message || 'Bad Request',
       };
 
       ctx.app.emit('error', err, ctx);
@@ -46,8 +45,7 @@ export default function makeApp() {
 
   app.use(validate(document));
   // Mounting modules as we go
-  friends(app, '/api/v1');
-  subcriptions(app, '/api/v1');
+  auth(app, '/api/v1');
 
   return app;
 }

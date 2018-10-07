@@ -1,18 +1,15 @@
 version: '3.6'
 services:
-  postgres:
-    image: postgres:9.6.9
-    hostname: postgres
-    container_name: tomotachi-database
+  mongodb:
+    image: mongo:3.2.21-jessie
+    hostname: mongo
+    container_name: web-api-database
     ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_PASSWORD=adminadmin
-      - POSTGRES_DB=tomotachi
+      - 27017:27017
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/db:/data/db
 
-  tomatachi:
+  web-api:
     build:
       dockerfile: Dockerfile
       context: .
@@ -21,8 +18,8 @@ services:
     ports:
       - 8080:8080
     links:
-      - postgres
+      - mongodb
     depends_on:
-      - postgres
+      - mongodb
     env_file:
       - .env.docker

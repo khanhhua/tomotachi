@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
-  description: Documentation for interacting with Tomotachi via JSON-Rpc/HTTP
+  description: Documentation for interacting with web-api via RestFUL/HTTP
   version: 1.0.0
-  title: Tomotachi
+  title: web-api
   termsOfService: 'http://swagger.io/terms/'
   contact:
     email: giakhanh2487@gmail.com
@@ -12,301 +12,189 @@ info:
 host: 'localhost:8080'
 basePath: /api/v1
 tags:
-- name: friends
-  description: Friends and the links between them
-- name: subscriptions
-  description: Who receives what from whom
+  - name: authentication
+    description: Authentication
+  - name: channel
+    description: Channel or topic of the chat
+  - name: message
+    description: Individual message
 schemes:
-- http
+  - http
 paths:
-  '/connect':
+  '/auth':
     post:
       tags:
-        - friends
-      summary: API to create a friend connection between two email addresses
+        - authentication
+      summary: API for authentication
 
       parameters:
         - in: body
-          name: rpcParamObject
+          name: body
           description: |
             **Sample value**
             ```
             {
-              "friends": [
-                "andy@example.com",
-                "john@example.com"
-              ]
+              "email": "user1@mailinator.com",
+              "password": "encpass"
             }
             ```
           schema:
             type: object
             required:
-              - friends
+              - email
+              - password
             properties:
-              friends:
-                type: array
-                minItems: 2
-                maxItems: 2
-                uniqueItems: true
-                items:
-                  type: string
-                  format: email
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
-          description: bad request
-          schema:
-            $ref: '#/definitions/ApiResponse'
-
-  '/getFriendList':
-    post:
-      tags:
-        - friends
-      summary: API to retrieve the friends list for an email address.
-
-      parameters:
-      - in: body
-        name: rpcParamObject
-        description: |
-          **Sample value**
-          ```
-          {
-            "email": "andy@example.com"
-          }
-          ```
-        schema:
-          type: object
-          required:
-            - email
-          properties:
-            email:
-              type: string
-              format: email
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/FriendListResponse'
-        '400':
-          description: bad request
-          schema:
-            $ref: '#/definitions/ApiResponse'
-        '404':
-          description: Email not found
-          schema:
-            $ref: '#/definitions/ApiResponse'
-
-  '/getCommonFriendList':
-    post:
-      tags:
-        - friends
-      summary: API to retrieve the common friends list between two email addresses.
-
-      parameters:
-      - in: body
-        name: rpcParamObject
-        description: |
-          **Sample value**
-          ```
-          {
-            "friends": [
-              "andy@example.com",
-              "john@example.com"
-            ]
-          }
-          ```
-        schema:
-          type: object
-          required:
-            - friends
-          properties:
-            friends:
-              type: array
-              items:
+              email:
                 type: string
                 format: email
-              minItems: 2
-              maxItems: 2
+              password:
+                type: string
       responses:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/FriendListResponse'
+            $ref: '#/definitions/AuthResponse'
         '400':
           description: bad request
           schema:
             $ref: '#/definitions/ApiResponse'
 
-  '/subscribe':
-    post:
+  '/channels':
+    get:
       tags:
-        - subscriptions
-      summary: API to subscribe to updates from an email address..
-      description: Note that "subscribing to updates" is NOT equivalent to "adding a friend connection".
-      parameters:
-      - in: body
-        name: rpcParamObject
-        description: |
-          **Sample value**
-          ```
-          {
-            "requestor": "lisa@example.com",
-            "target": "john@example.com"
-          }
-          ```
-        schema:
-          type: object
-          required:
-            - requestor
-            - target
-          properties:
-            requestor:
-              type: string
-              format: email
-            target:
-              type: string
-              format: email
+        - channel
+      summary: Gets all channels within the system
+
       responses:
         '200':
           description: successful operation
           schema:
+            $ref: '#/definitions/ChannelListResponse'
+        '400':
+          description: bad request
+          schema:
             $ref: '#/definitions/ApiResponse'
+  '/channels/:channelId':
+    get:
+      tags:
+        - channel
+      summary: Gets all channels within the system
+      parameters:
+        - in: path
+          name: channelId
+          schema:
+            type: string
+          description: Channel ID
+
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ChannelResponse'
         '400':
           description: bad request
           schema:
             $ref: '#/definitions/ApiResponse'
 
-  '/block':
+  '/channels/:channelId/messages':
     post:
       tags:
-        - subscriptions
-      summary: API to block updates from an email address..
-      description: |
-        Suppose "andy@example.com" blocks "john@example.com":
-
-        if they are connected as friends, then "andy" will no longer receive notifications from "john"
-        if they are not connected as friends, then no new friends connection can be added
-
+        - channel
+      summary: Post new message to the channel
       parameters:
-      - in: body
-        name: rpcParamObject
-        description: |
-          **Sample value**
-          ```
-          {
-            "requestor": "lisa@example.com",
-            "target": "john@example.com"
-          }
-          ```
-        schema:
-          type: object
-          required:
-            - requestor
-            - target
-          properties:
-            requestor:
-              type: string
-              format: email
-            target:
-              type: string
-              format: email
+        - in: path
+          name: channelId
+          schema:
+            type: string
+          description: Channel ID
+        - in: body
+          name: message
+          schema:
+            type: string
+          description: The message to send
+
       responses:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/MessageResponse'
         '400':
           description: bad request
           schema:
             $ref: '#/definitions/ApiResponse'
 
-  '/getUpdateRecipients':
-    post:
+  '/messages/:messageId':
+    put:
       tags:
-        - subscriptions
-      summary: API to retrieve all email addresses that can receive updates from an email address
-      description: |
-        Eligibility for receiving updates from i.e. "john@example.com":
-
-          - has not blocked updates from "john@example.com", and
-          - at least one of the following:
-
-            - has a friend connection with "john@example.com"
-            - has subscribed to updates from "john@example.com"
-            - has been @mentioned in the update
-
+        - message
+      summary: Update the message new content
       parameters:
-      - in: body
-        name: rpcParamObject
-        description: |
-          **Sample value**
-          ```
-          {
-            "sender":  "john@example.com",
-            "text": "Hello World! kate@example.com"
-          }
-          ```
-        schema:
-          type: object
-          required:
-            - sender
-            - text
-          properties:
-            sender:
-              type: string
-              format: email
-            text:
-              type: string
-              pattern: '^[\w\s@.,?!:]+$'
-              description: 'Free text but only alpha numeric characters and "@", ".", ",", "!", ":" are allowed.'
+        - in: path
+          name: channelId
+          schema:
+            type: string
+          description: Channel ID
+          required: true
+        - in: body
+          name: message
+          schema:
+            type: string
+          description: The new message content
+          required: true
+
       responses:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/SubscriberListResponse'
+            $ref: '#/definitions/ApiResponse'
         '400':
           description: bad request
           schema:
             $ref: '#/definitions/ApiResponse'
 
 definitions:
-  FriendListResponse:
+  Message:
     type: object
+    required:
+      - id
+      - sender
+      - body
     properties:
-      success:
-        type: boolean
-        enum: [true]
-      friends:
-        type: array
-        items:
-          type: string
-          format: email
-      count:
-        type: integer
+      id:
+        type: string
+      sender:
+        type: string
+      body:
+        type: string
+      createdAt:
+        type: string
 
-  SubscriberListResponse:
+  Channel:
     type: object
     properties:
-      success:
-        type: boolean
-        enum: [true]
-      recipients:
+      id:
+        type: string
+      name:
+        type: string
+      chatters:
         type: array
         items:
           type: string
-          format: email
-      count:
-        type: integer
+      createdAt:
+        type: string
+      lastMsgAt:
+        type: string
+      messages:
+        type: array
+        items:
+          $ref: '#/definitions/Message'
 
   ApiResponse:
     type: object
     required:
-      - success
+      - ok
     properties:
-      success:
+      ok:
         type: boolean
       code:
         type: integer
@@ -319,6 +207,56 @@ definitions:
         type: array
         items:
           type: string
+
+  AuthResponse:
+    type: object
+    required:
+    - ok
+    properties:
+      ok:
+        type: boolean
+      authToken:
+        type: string
+      username:
+        type: string
+      id:
+        type: string
+
+  MessageResponse:
+    type: object
+    required:
+      - ok
+      - message
+    properties:
+      ok:
+        type: boolean
+      channel:
+        $ref: '#/definitions/Message'
+
+  ChannelResponse:
+    type: object
+    required:
+      - ok
+      - channel
+    properties:
+      ok:
+        type: boolean
+      channel:
+        $ref: '#/definitions/Channel'
+
+  ChannelListResponse:
+    type: object
+    required:
+      - ok
+      - channels
+    properties:
+      ok:
+        type: boolean
+      channels:
+        type: array
+        items:
+          $ref: '#/definitions/Channel'
+
 externalDocs:
   description: Find out more about Swagger
   url: 'http://swagger.io'

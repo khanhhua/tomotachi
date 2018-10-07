@@ -1,8 +1,8 @@
 FROM node:slim
 
-ENV NODE_ENV=development \
-    DATABASE_URL= \
-    DEBUG=tomotachi
+ENV NODE_ENV=development\
+    DATABASE_URL=\
+    DEBUG='web-api'
 
 COPY . .
 RUN npm install

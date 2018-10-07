@@ -6,9 +6,5 @@ cache:
   directories:
     - "node_modules"
 
-before_script:
-  - export DATABASE_URL=postgres://postgres:adminadmin@localhost:5432/tomotachi
-
-
 script:
   - npm test
