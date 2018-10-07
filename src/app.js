@@ -7,6 +7,7 @@ import { validate } from 'swagger2-koa';
 
 import auth from './auth';
 import channels from './channels';
+import messages from './messages';
 
 export default function makeApp() {
   const dbg = debug('web-api:app');
@@ -48,6 +49,7 @@ export default function makeApp() {
   // Mounting modules as we go
   auth(app, '/api/v1');
   channels(app, '/api/v1');
+  messages(app, '/api/v1');
 
   return app;
 }
